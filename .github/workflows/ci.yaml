@@ -9,11 +9,15 @@ on:
 
 jobs:
   test-snap:
-    runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        architecture: [amd64, arm64]
+        include:
+          - architecture: amd64
+            runner: ubuntu-latest
+          - architecture: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@main
@@ -24,26 +28,21 @@ jobs:
           TAG=$(cat target-tag)
           ./template.sh $TAG
 
-      - name: Build snap for ${{ matrix.architecture }}
+      - name: Build snap
         uses: snapcore/action-build@master
         id: build-snap
-        with:
-          snapcraft-args: --build-for=${{ matrix.architecture }}
 
-      - name: Install snap (AMD64 only)
-        if: matrix.architecture == 'amd64'
+      - name: Install snap
         run: |
           sudo snap install --dangerous ${{ steps.build-snap.outputs.snap }}
 
-      - name: Test Typst (AMD64 only)
-        if: matrix.architecture == 'amd64'
+      - name: Test Typst
         run: |
           echo "Hello, Typst!" > test.typ
           typst --version
           typst compile test.typ
 
-      - name: Verify output PDF (AMD64 only)
-        if: matrix.architecture == 'amd64'
+      - name: Verify output PDF
         run: |
           if [ -f test.pdf ]; then
             echo "PDF generated successfully."
