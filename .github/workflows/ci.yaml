@@ -10,6 +10,10 @@ on:
 jobs:
   test-snap:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        architecture: [amd64, arm64]
     steps:
       - name: Checkout repository
         uses: actions/checkout@main
@@ -20,23 +24,26 @@ jobs:
           TAG=$(cat target-tag)
           ./template.sh $TAG
 
-      - name: Build snap
+      - name: Build snap for ${{ matrix.architecture }}
         uses: snapcore/action-build@master
         id: build-snap
+        with:
+          snapcraft-args: --build-for=${{ matrix.architecture }}
 
-      - name: Install snap
+      - name: Install snap (AMD64 only)
+        if: matrix.architecture == 'amd64'
         run: |
           sudo snap install --dangerous ${{ steps.build-snap.outputs.snap }}
 
-      - name: Create test Typst file
+      - name: Test Typst (AMD64 only)
+        if: matrix.architecture == 'amd64'
         run: |
           echo "Hello, Typst!" > test.typ
-
-      - name: Compile Typst document
-        run: |
+          typst --version
           typst compile test.typ
 
-      - name: Verify output PDF
+      - name: Verify output PDF (AMD64 only)
+        if: matrix.architecture == 'amd64'
         run: |
           if [ -f test.pdf ]; then
             echo "PDF generated successfully."
@@ -49,7 +56,7 @@ jobs:
         uses: actions/upload-artifact@main
         if: always()
         with:
-          name: snap-artifacts
+          name: snap-${{ matrix.architecture }}
           path: |
             *.snap
             test.typ
