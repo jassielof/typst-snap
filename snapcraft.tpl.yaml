@@ -45,3 +45,13 @@ apps:
       - home    # read sources and write output
       - removable-media # read sources on media
       - network-bind # serve live HTML in watch mode
+
+plugs:
+  dot-local-share-typst:
+    interface: personal-files
+    read:
+      - $HOME/.local/share/typst
+  dot-cache-typst:
+    interface: personal-files
+    write:
+      - $HOME/.cache/typst
