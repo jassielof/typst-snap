@@ -45,7 +45,7 @@ apps:
       TYPST_PACKAGE_PATH: $SNAP_REAL_HOME/.local/share/typst/packages
       TYPST_PACKAGE_CACHE_PATH: $SNAP_REAL_HOME/.cache/typst/packages
       # Typst font path is a list that should have the snap real home (~/.local/share/fonts) and the system fonts (which are already read by default)
-      TYPST_FONT_PATH: $SNAP_REAL_HOME/.local/share/fonts:/usr/share/fonts
+      TYPST_FONT_PATHS: $SNAP_REAL_HOME/.local/share/fonts:/usr/share/fonts
     plugs:
       - desktop # access host fonts
       - network # retrieve packages
